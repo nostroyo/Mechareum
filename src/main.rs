@@ -19,7 +19,6 @@ fn main() {
 
         if let Some((First, Elements)) = battling_mecha.split_first_mut() {
 
-
             if let Some(Second) = Elements.get_mut(0) {
 
                 let fastest;

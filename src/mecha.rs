@@ -8,16 +8,20 @@
 
     pub struct Mecha{
         pub name: String,
-        pub health: u8,
+
+        // blockchain generated attribute
         pub atk: u8,
+        pub health: u8,
         pub speed: u8,
+        color: MechaColor,
+
         xp: u8,
         pub current_atk: u8,
-        color: MechaColor,
+
     }
 
     impl Mecha {
-       pub fn new(name: String, health: u8, atk: u8, speed: u8, color: MechaColor) -> Mecha {
+       pub fn new(name: String, atk: u8, health: u8, speed: u8, color: MechaColor) -> Mecha {
             Mecha {
                 name,
                 health,
@@ -27,6 +31,15 @@
                 current_atk: atk,
                 color
             }
+        }
+
+        pub fn NewFromBlockchain(characteristics: (u8, u8, u8, u8), name: String) -> Mecha {
+            Mecha::new(
+                name,
+                characteristics.0,
+                characteristics.1,
+                characteristics.2,
+            MechaColor(characteristics.3))
         }
 
         pub fn TakeDamage(&mut self, amount_damage: u8) {
