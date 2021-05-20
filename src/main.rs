@@ -1,9 +1,13 @@
 use crate::mecha::{Mecha, MechaColor};
-
+use crate::mecha_collection::CachedMechaCollection;
 
 mod mecha;
 mod mecha_state;
 mod ethBridge;
+mod mecha_collection;
+mod backend_mecha_function;
+mod mock_backend_function;
+
 
 fn main() {
     let mut nbTurn = 1;
@@ -12,6 +16,9 @@ fn main() {
         Mecha::new(String::from("YTH"), 25, 1, 1, MechaColor::Red),
         Mecha::new(String::from("CPU"), 2, 2, 2, MechaColor::Blue),
     ];
+
+    //let mut user_mecha_list: Option<CachedMechaCollection> = CachedMechaCollection::new ;
+
 
 
     loop {

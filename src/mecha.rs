@@ -1,93 +1,104 @@
+use std::mem::transmute;
 
-    pub enum MechaColor {
-        Red,
-        Blue,
-        Green,
-        Yellow,
+#[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
+pub enum MechaColor {
+    Red = 0,
+    Blue,
+    Green,
+    Yellow,
+    Last,
+}
+
+pub type BackendMechaCharacteristics = (u8, u8, u8, u8, String);
+
+#[derive(Clone)]
+pub struct Mecha{
+    pub name: String,
+
+    // blockchain generated attribute
+    pub atk: u8,
+    pub health: u8,
+    pub speed: u8,
+    color: MechaColor,
+
+    xp: u8,
+    pub current_atk: u8,
+
+}
+impl Mecha {
+   pub fn new(name: String, atk: u8, health: u8, speed: u8, color: MechaColor) -> Mecha {
+        Mecha {
+            name,
+            health,
+            atk,
+            speed,
+            xp: 0,
+            current_atk: atk,
+            color
+        }
     }
 
-    pub struct Mecha{
-        pub name: String,
+    pub fn NewFromBlockchain(characteristics: (u8, u8, u8, u8, String)) -> Option<Mecha> {
+        let mecha_color: MechaColor = unsafe {transmute(characteristics.3)};
 
-        // blockchain generated attribute
-        pub atk: u8,
-        pub health: u8,
-        pub speed: u8,
-        color: MechaColor,
-
-        xp: u8,
-        pub current_atk: u8,
-
+        Some(Mecha::new(
+            characteristics.4,
+            characteristics.0,
+            characteristics.1,
+            characteristics.2,
+            mecha_color))
     }
 
-    impl Mecha {
-       pub fn new(name: String, atk: u8, health: u8, speed: u8, color: MechaColor) -> Mecha {
-            Mecha {
-                name,
-                health,
-                atk,
-                speed,
-                xp: 0,
-                current_atk: atk,
-                color
-            }
+    pub fn TakeDamage(&mut self, amount_damage: u8) {
+        if amount_damage > self.health {
+            self.health = 0
+        } else {
+            self.health -= amount_damage;
         }
+    }
 
-        pub fn NewFromBlockchain(characteristics: (u8, u8, u8, u8), name: String) -> Mecha {
-            Mecha::new(
-                name,
-                characteristics.0,
-                characteristics.1,
-                characteristics.2,
-            MechaColor(characteristics.3))
-        }
-
-        pub fn TakeDamage(&mut self, amount_damage: u8) {
-            if amount_damage > self.health {
-                self.health = 0
-            } else {
-                self.health -= amount_damage;
-            }
-        }
-
-        pub fn AttackOpponent(&self, damaging_mecha: &mut Mecha) {
-            let mut atk = self.current_atk;
-            if atk > 0 {
-                match damaging_mecha.color {
-                    MechaColor::Red => {
-                        match self.color {
-                            MechaColor::Red => {}
-                            MechaColor::Blue => { atk += 1 }
-                            MechaColor::Green => {}
-                            MechaColor::Yellow => { atk -= 1 }
-                        }
-                    }
-                    MechaColor::Blue => {
-                        match self.color {
-                            MechaColor::Red => { atk -= 1 }
-                            MechaColor::Blue => {}
-                            MechaColor::Green => {}
-                            MechaColor::Yellow => { atk += 1 }
-                        }
-                    }
-                    MechaColor::Green => {}
-                    MechaColor::Yellow => {
-                        match self.color {
-                            MechaColor::Red => { atk += 1 }
-                            MechaColor::Blue => { atk -= 1 }
-                            MechaColor::Green => {}
-                            MechaColor::Yellow => {}
-                        }
+    pub fn AttackOpponent(&self, damaging_mecha: &mut Mecha) {
+        let mut atk = self.current_atk;
+        if atk > 0 {
+            match damaging_mecha.color {
+                MechaColor::Red => {
+                    match self.color {
+                        MechaColor::Red => {}
+                        MechaColor::Blue => { atk += 1 }
+                        MechaColor::Green => {}
+                        MechaColor::Yellow => { atk -= 1 }
+                        _ => {panic!("Invalid Mecha color")}
                     }
                 }
-                damaging_mecha.TakeDamage(atk);
+                MechaColor::Blue => {
+                    match self.color {
+                        MechaColor::Red => { atk -= 1 }
+                        MechaColor::Blue => {}
+                        MechaColor::Green => {}
+                        MechaColor::Yellow => { atk += 1 }
+                        _ => {panic!("Invalid Mecha color")}
+                    }
+                }
+                MechaColor::Green => {}
+                MechaColor::Yellow => {
+                    match self.color {
+                        MechaColor::Red => { atk += 1 }
+                        MechaColor::Blue => { atk -= 1 }
+                        MechaColor::Green => {}
+                        MechaColor::Yellow => {}
+                        _ => {panic!("Invalid Mecha color")}
+                    }
+                }
+                _ => {panic!("Invalid Mecha color")}
             }
-        }
-
-        pub fn info(& self) -> String {
-            format!("Name: {} Health: {} current atk: {} ", self.name, self.health, self.current_atk)
+            damaging_mecha.TakeDamage(atk);
         }
     }
+
+    pub fn info(& self) -> String {
+        format!("Name: {} Health: {} current atk: {} ", self.name, self.health, self.current_atk)
+    }
+}
 
 
 #[cfg(test)]
