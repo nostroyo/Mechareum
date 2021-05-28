@@ -10,7 +10,7 @@ const STANDARD_MAX: u8 = 3;
 const BOOSTED_MIN: u8 = 3;
 const BOOSTED_MAX: u8 = 5;
 
-struct MockBackend {
+pub struct MockBackend {
     mecha_list: Vec<BackendMechaCharacteristics>,
     randomizer: ThreadRng,
 }
@@ -68,7 +68,7 @@ impl BackEndMechaFunction for MockBackend {
 }
 
 impl MockBackend {
-    fn new() -> Self {
+    pub fn new() -> Self {
         MockBackend {
             mecha_list: vec![],
             randomizer: rand::thread_rng()
@@ -76,3 +76,33 @@ impl MockBackend {
     }
 }
 
+#[cfg(test)]
+mod tests {
+    use crate::mock_backend_function::MockBackend;
+    use crate::backend_mecha_function::BackEndMechaFunction;
+    use web3::types::U256;
+
+    #[test]
+    fn test_add_mecha() {
+
+        let mut backend = MockBackend::new();
+
+        for i in 0..5 {
+            backend.generate_new_mecha(format!("{}", i))
+        }
+
+        {
+            let mecha_list = & mut backend.mecha_list;
+            for mecha in mecha_list {
+                println!("{}", mecha.4)
+            }
+        }
+
+        assert_eq!(backend.get_total_mecha_owned(), U256::from(5));
+
+        let mecha = backend.get_owned_mecha_by_index(U256::from(0));
+        assert_eq!(mecha.4, String::from("0"))
+
+    }
+
+}

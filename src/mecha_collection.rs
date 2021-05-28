@@ -21,6 +21,8 @@ impl<F: BackEndMechaFunction> Iterator for CachedMechaCollection<F> {
             None
         } else {
             if self.index > self.mecha_list.len() {
+
+                println!("{}", self.mecha_list.len());
                 self.load_mecha_from_backend(self.index)
 
             }
@@ -39,11 +41,10 @@ impl<F: BackEndMechaFunction> Iterator for CachedMechaCollection<F> {
 impl<F: BackEndMechaFunction> CachedMechaCollection<F> {
 
     pub fn new(backend_function: F) -> Self {
-        
 
         CachedMechaCollection {
             mecha_list: vec![],
-            index: 1,
+            index: 0,
             total_length: Default::default(),
             backend_func: backend_function
         }
@@ -51,9 +52,10 @@ impl<F: BackEndMechaFunction> CachedMechaCollection<F> {
 
     }
 
-    fn load_mecha_from_backend(&mut self, offset: usize) {
+    pub fn load_mecha_from_backend(&mut self, offset: usize) {
 
         let total_length = self.backend_func.get_total_mecha_owned();
+        self.total_length = total_length;
 
         for i in offset..cmp::min(offset + CACHE_SIZE, total_length.as_usize()) {
             self.mecha_list.push(
@@ -62,6 +64,43 @@ impl<F: BackEndMechaFunction> CachedMechaCollection<F> {
                 ).unwrap()
             );
         }
+
+
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::mecha_collection::CachedMechaCollection;
+    use crate::mock_backend_function::MockBackend;
+    use crate::backend_mecha_function::BackEndMechaFunction;
+
+
+    pub fn setup_mock() -> CachedMechaCollection<MockBackend> {
+
+        let mut collection = CachedMechaCollection::new(MockBackend::new());
+
+        for i in 0..9 {
+            collection.backend_func.generate_new_mecha(format!("{}", i));
+        }
+        collection
+    }
+
+    #[test]
+    pub fn test_mock_cache() {
+
+        let mut collection = setup_mock();
+
+        collection.load_mecha_from_backend(0);
+        assert_eq!(collection.mecha_list.len(), 5);
+
+        collection.load_mecha_from_backend(5);
+        assert_eq!(collection.mecha_list.len(), 9);
+
+         for mecha in collection {
+             println!("{}", mecha.name);
+
+         }
 
 
     }
