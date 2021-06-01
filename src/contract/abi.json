@@ -251,36 +251,29 @@
 		"name": "GetMechaById",
 		"outputs": [
 			{
-				"components": [
-					{
-						"internalType": "uint8",
-						"name": "Atk",
-						"type": "uint8"
-					},
-					{
-						"internalType": "uint8",
-						"name": "Health",
-						"type": "uint8"
-					},
-					{
-						"internalType": "uint8",
-						"name": "Speed",
-						"type": "uint8"
-					},
-					{
-						"internalType": "enum Poke.Pokcolor",
-						"name": "Color",
-						"type": "uint8"
-					},
-					{
-						"internalType": "string",
-						"name": "Name",
-						"type": "string"
-					}
-				],
-				"internalType": "struct Poke.Mecha",
+				"internalType": "uint256",
 				"name": "",
-				"type": "tuple"
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
 			}
 		],
 		"stateMutability": "view",
@@ -337,19 +330,6 @@
 				"internalType": "address",
 				"name": "",
 				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "randomState",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",

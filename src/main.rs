@@ -14,7 +14,7 @@ mod backend_mecha_function;
 mod mock_backend_function;
 
 const PLAYER_ADDRESS: &str = "F2b2208cecb42a55Fd328E871B2d04C85e91Bd5E";
-const MECHA_CONTRACT_ADDRESS: &str = "1E63952E734616475A53f4c0D62D78969549D215";
+const MECHA_CONTRACT_ADDRESS: &str = "DA55220355db9762fF10281C6E6946f15E29AAa0";
 
 fn main() -> io::Result<()> {
     let mut nbTurn = 1;
@@ -38,17 +38,23 @@ fn main() -> io::Result<()> {
         }
     }
 
-
     for i in 0..nb_mecha {
         let mut buffer = String::new();
         println!("mecha name ?");
         stdin().read_line(&mut buffer)?;
-        buffer.trim_end();
-        mecha_NFT_contract.generate_new_mecha(buffer);
-    }
-    Ok(())
+        mecha_NFT_contract.generate_new_mecha(String::from(buffer.trim_end()));
+        let last_mecha_id = mecha_NFT_contract.get_total_mecha_owned() - 1;
+        let mecha = mecha_NFT_contract.get_owned_mecha_by_index(last_mecha_id);
 
-    // let mut user_mecha_list= CachedMechaCollection::new(mecha_NFT_contract);
+        println!("Mecha char {:?}", mecha);
+    }
+
+    let mut user_mecha_list= CachedMechaCollection::new(mecha_NFT_contract);
+    for mecha in user_mecha_list {
+        println!("Mecha info {}", mecha.info());
+    }
+
+    Ok(())
     //
     //
     //

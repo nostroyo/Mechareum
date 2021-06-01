@@ -37,10 +37,10 @@ impl ETHNFTContract {
 }
 impl BackEndMechaFunction for ETHNFTContract {
 
-    fn get_mecha_characteristics_by_id(&self, id: U256) -> BackendMechaCharacteristics {
+    fn get_mecha_characteristics_by_id(&self, id: U256) -> BackendMechaCharacteristics {//[(u8, u8, u8, u8, String); 1] {
 
         let result = self.mecha_contract_nft.query(
-            "MechasOwnership",
+            "GetMechaById",
             (id,),
             self.player_address,
             Options::default(),
@@ -90,15 +90,27 @@ mod tests {
     use crate::backend_mecha_function::BackEndMechaFunction;
     use web3::types::{U256};
     use super::web3::futures::Future;
+    use super::web3::contract::Options;
 
     const PLAYER_ADDRESS: &str = "F2b2208cecb42a55Fd328E871B2d04C85e91Bd5E";
-    const MECHA_CONTRACT_ADDRESS: &str = "1E63952E734616475A53f4c0D62D78969549D215";
+    const MECHA_CONTRACT_ADDRESS: &str = "DA55220355db9762fF10281C6E6946f15E29AAa0";
 
     fn setup() -> ETHNFTContract {
         ETHNFTContract::new(
             MECHA_CONTRACT_ADDRESS.to_string(),
             PLAYER_ADDRESS.to_string()
         )
+    }
+
+    #[test]
+    fn test_connexion() {
+        let (_eloop, http) = web3::transports::Http::new(
+            "http://localhost:8545"
+        ).unwrap();
+
+        let web3 = web3::Web3::new(http);
+        let accounts = web3.eth().accounts().wait().unwrap();
+        println!("Accounts: {:?}", accounts);
     }
 
     #[test]
@@ -112,20 +124,25 @@ mod tests {
     fn test_get_balance_of() {
 
         let mut mecha_NFT_contract = setup();
+        let nb_mecha = mecha_NFT_contract.get_total_mecha_owned();
+        println!("nb mecha {}", nb_mecha);
+        mecha_NFT_contract.generate_new_mecha("toto".to_string());
 
-        assert_eq!(mecha_NFT_contract.get_total_mecha_owned(), U256::from(0));
+        assert_eq!(mecha_NFT_contract.get_total_mecha_owned(), U256::from(nb_mecha + 1));
 
     }
     #[test]
-    fn test_connexion() {
-        let (_eloop, http) = web3::transports::Http::new(
-            "http://localhost:8545"
-        ).unwrap();
+    fn char() {
+        let mut mecha_NFT_contract = setup();
+        let result = mecha_NFT_contract.mecha_contract_nft.query(
+            "GetMechaById",
+            (U256::from(1),),
+            mecha_NFT_contract.player_address,
+            Options::default(),
+            None);
 
-        let web3 = web3::Web3::new(http);
-        let accounts = web3.eth().accounts().wait().unwrap();
-        println!("Accounts: {:?}", accounts);
+        let result: (u8, u8, u8, u8, String) = result.wait().unwrap();
+        println!("{:?}", result);
     }
-
 
 }

@@ -17,14 +17,19 @@ impl<F: BackEndMechaFunction> Iterator for CachedMechaCollection<F> {
     type Item = Mecha;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if U256::from(self.index) > self.total_length {
+        if self.index == 0 {
+            self.total_length = self.backend_func.get_total_mecha_owned();
+        }
+        println!("total length {}", self.total_length);
+        println!("Index {}", self.index);
+        println!("list length {}", self.mecha_list.len());
+        if U256::from(self.index) == self.total_length {
             None
         } else {
-            if self.index > self.mecha_list.len() {
+            if self.index == self.mecha_list.len() {
 
-                println!("{}", self.mecha_list.len());
-                self.load_mecha_from_backend(self.index)
-
+                self.load_mecha_from_backend(self.index);
+                println!("charge list {}", self.mecha_list.len());
             }
 
             let mecha_opt = self.mecha_list.get(self.index);
@@ -33,7 +38,6 @@ impl<F: BackEndMechaFunction> Iterator for CachedMechaCollection<F> {
                 None => {None}
                 Some(mecha_instance) => {Some(mecha_instance.clone())}
             }
-
         }
     }
 }
@@ -48,8 +52,6 @@ impl<F: BackEndMechaFunction> CachedMechaCollection<F> {
             total_length: Default::default(),
             backend_func: backend_function
         }
-
-
     }
 
     pub fn load_mecha_from_backend(&mut self, offset: usize) {
@@ -60,7 +62,7 @@ impl<F: BackEndMechaFunction> CachedMechaCollection<F> {
         for i in offset..cmp::min(offset + CACHE_SIZE, total_length.as_usize()) {
             self.mecha_list.push(
                 Mecha::NewFromBlockchain(
-                    self.backend_func.get_mecha_characteristics_by_id(U256::from(i))
+                    self.backend_func.get_owned_mecha_by_index(U256::from(i))
                 ).unwrap()
             );
         }
@@ -91,17 +93,12 @@ mod tests {
 
         let mut collection = setup_mock();
 
-        collection.load_mecha_from_backend(0);
-        assert_eq!(collection.mecha_list.len(), 5);
-
-        collection.load_mecha_from_backend(5);
-        assert_eq!(collection.mecha_list.len(), 9);
-
-         for mecha in collection {
-             println!("{}", mecha.name);
-
+        let mut i = 0;
+        for mecha in collection {
+            println!("{}", mecha.name);
+            i += 1;
          }
-
+        assert_eq!(i , 9);
 
     }
 }

@@ -96,7 +96,7 @@ impl Mecha {
     }
 
     pub fn info(& self) -> String {
-        format!("Name: {} Health: {} current atk: {} ", self.name, self.health, self.current_atk)
+        format!("Name: {} Health: {} current atk: {} color: {:?}", self.name, self.health, self.current_atk, self.color)
     }
 }
 

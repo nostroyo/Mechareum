@@ -24,12 +24,11 @@ contract Mecha is ERC721Enumerable
 
 
     uint randNonce;
-    uint public randomState;
+
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
     mapping(uint256 => Mecha) private idToMechaMap;
-
 
     constructor () ERC721("Poke", "PKT") {
     }
@@ -77,10 +76,11 @@ contract Mecha is ERC721Enumerable
 
     }
 
-    function GetMechaById(uint256 id) public view returns(Mecha memory) {
+    function GetMechaById(uint256 id) public view returns (uint, uint, uint, uint, string memory) {
         require(msg.sender == ownerOf(id));
+        Mecha memory mecha = idToMechaMap[id];
 
-        return idToMechaMap[id];
+        return (mecha.Atk, mecha.Health, mecha.Speed, uint(mecha.Color), mecha.Name);
     }
 
     // not very good RNG use oracle instead
