@@ -4,11 +4,10 @@ use crate::mecha::{Mecha, BackendMechaCharacteristics};
 use crate::backend_mecha_function::BackEndMechaFunction;
 
 use web3::futures::Future;
-use web3::contract::{Contract, Options};
+use web3::contract::{Contract, Options, QueryResult};
 use web3::types::{TransactionRequest, Address, U256};
 use web3::transports::{Http, EventLoopHandle};
-
-
+use self::web3::Error;
 
 pub struct ETHNFTContract {
     mecha_contract_nft: Contract<Http>,
@@ -37,7 +36,7 @@ impl ETHNFTContract {
 }
 impl BackEndMechaFunction for ETHNFTContract {
 
-    fn get_mecha_characteristics_by_id(&self, id: U256) -> BackendMechaCharacteristics {//[(u8, u8, u8, u8, String); 1] {
+    fn get_mecha_characteristics_by_id(&self, id: U256) -> BackendMechaCharacteristics {
 
         let result = self.mecha_contract_nft.query(
             "GetMechaById",

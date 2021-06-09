@@ -7,7 +7,7 @@ use std::cmp;
 const CACHE_SIZE: usize = 5;
 
 pub struct CachedMechaCollection<F: BackEndMechaFunction> {
-    mecha_list: Vec<Mecha>,
+    pub mecha_list: Vec<Mecha>,
     index: usize,
     total_length: U256,
     backend_func: F,
@@ -20,9 +20,6 @@ impl<F: BackEndMechaFunction> Iterator for CachedMechaCollection<F> {
         if self.index == 0 {
             self.total_length = self.backend_func.get_total_mecha_owned();
         }
-        println!("total length {}", self.total_length);
-        println!("Index {}", self.index);
-        println!("list length {}", self.mecha_list.len());
         if U256::from(self.index) == self.total_length {
             None
         } else {
@@ -66,7 +63,14 @@ impl<F: BackEndMechaFunction> CachedMechaCollection<F> {
                 ).unwrap()
             );
         }
+    }
 
+    pub fn get_mecha_by_id(&self,id: usize) -> Option<Mecha> {
+        let mecha = self.mecha_list.get(id);
+        match mecha {
+            None => None,
+            Some(m) => {Some(m.clone())}
+        }
 
     }
 }

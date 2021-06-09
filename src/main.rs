@@ -1,10 +1,12 @@
 use crate::mecha::{Mecha, MechaColor};
 use crate::mecha_collection::CachedMechaCollection;
 use crate::ethBridge::ETHNFTContract;
-use std::io::{stdin, Error};
+use std::io::{stdin, Error, ErrorKind};
 use std::str::FromStr;
 use crate::backend_mecha_function::BackEndMechaFunction;
 use std::io;
+use std::num::ParseIntError;
+use web3::types::U256;
 
 mod mecha;
 mod mecha_state;
@@ -23,88 +25,86 @@ fn main() -> io::Result<()> {
         MECHA_CONTRACT_ADDRESS.to_string(),
         PLAYER_ADDRESS.to_string()
     );
-
+    
     let mut nb_mecha;
     loop {
-        let mut buffer = String::new();
         println!("How many mecha create ?");
-        stdin().read_line(&mut buffer)?;
-        match u8::from_str(&buffer.trim_end()) {
-            Ok(nb) => {
-                nb_mecha = nb;
-                break;
-            }
-            Err(_) => { println!("NAN") }
+        let read_value = read_u8_from_console()?;
+        match read_value {
+            Ok(value) => {nb_mecha = value; break;}
+            Err(_) => {}
         }
     }
 
-    for i in 0..nb_mecha {
+    for _ in 0..nb_mecha {
         let mut buffer = String::new();
         println!("mecha name ?");
         stdin().read_line(&mut buffer)?;
         mecha_NFT_contract.generate_new_mecha(String::from(buffer.trim_end()));
         let last_mecha_id = mecha_NFT_contract.get_total_mecha_owned() - 1;
         let mecha = mecha_NFT_contract.get_owned_mecha_by_index(last_mecha_id);
-
-        println!("Mecha char {:?}", mecha);
     }
 
-    let mut user_mecha_list= CachedMechaCollection::new(mecha_NFT_contract);
+    let user_mecha_list = CachedMechaCollection::new(mecha_NFT_contract);
+    let mut i = 1;
+    let mut mecha_list= Vec::new();
     for mecha in user_mecha_list {
-        println!("Mecha info {}", mecha.info());
+        println!("{} Mecha info {}", i, mecha.info());
+        mecha_list.push(mecha);
+        i += 1;
     }
 
+    let mut first_mecha = fill_fighting_mecha(& mecha_list)?;
+    let mut second_mecha = fill_fighting_mecha(& mecha_list)?;
+
+
+    loop {
+        print!("Turn {} ", nbTurn);
+
+        let fastest;
+        let slowest;
+        if first_mecha.speed >= second_mecha.speed {
+            fastest = &mut first_mecha;
+            slowest = &mut second_mecha;
+        } else {
+            fastest = &mut second_mecha;
+            slowest = & mut first_mecha;
+        }
+
+        println!("{} attack", fastest.name);
+        fastest.AttackOpponent(slowest);
+        if CheckKO(slowest){
+            break;
+        }
+
+        println!("{} attack", slowest.name);
+        slowest.AttackOpponent(fastest);
+        if CheckKO(fastest){
+            break;
+        }
+
+        println!("stats: {}", first_mecha.info());
+        println!("stats: {}", second_mecha.info());
+
+        nbTurn += 1;
+    }
     Ok(())
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    // let mut battling_mecha = [
-    //     Mecha::new(String::from("YTH"), 25, 1, 1, MechaColor::Red),
-    //     Mecha::new(String::from("CPU"), 2, 2, 2, MechaColor::Blue),
-    // ];
-    //
-    // //let mut user_mecha_list: Option<CachedMechaCollection> = CachedMechaCollection::new ;
-    //
-    //
-    //
-    // loop {
-    //     print!("Turn {} ", nbTurn);
-    //
-    //     if let Some((First, Elements)) = battling_mecha.split_first_mut() {
-    //
-    //         if let Some(Second) = Elements.get_mut(0) {
-    //
-    //             let fastest;
-    //             let slowest;
-    //             if First.speed >= Second.speed {
-    //                 fastest = First;
-    //                 slowest = Second;
-    //             } else {
-    //                 fastest = Second;
-    //                 slowest = First;
-    //             }
-    //
-    //             println!("{} attack", fastest.name);
-    //             fastest.AttackOpponent(slowest);
-    //             if CheckKO(slowest){
-    //                 break;
-    //             }
-    //
-    //             println!("{} attack", slowest.name);
-    //             slowest.AttackOpponent(fastest);
-    //             if CheckKO(fastest){
-    //                 break;
-    //             }
-    //         }
-    //     }
-    //     print_info(&battling_mecha);
-    //
-    //     nbTurn += 1;
-    // }
+}
+
+fn read_u8_from_console() -> io::Result<(Result<u8, ParseIntError>)> {
+    let mut buffer = String::new();
+    stdin().read_line(&mut buffer)?;
+    match u8::from_str(&buffer.trim_end())
+    {
+        Ok(nb) => {
+            Ok(Ok(nb))
+
+        }
+        Err(e) => {
+            println!("NAN");
+            Ok(Err(e))
+        }
+    }
 }
 
 fn CheckKO(mecha: &Mecha) -> bool {
@@ -116,11 +116,15 @@ fn CheckKO(mecha: &Mecha) -> bool {
     }
 }
 
-fn print_info(battling_mecha: &[Mecha]) {
-    for mecha in battling_mecha {
-        println!("stats: {}", mecha.info());
-        println!("stats: {}", mecha.info());
-    }
+fn fill_fighting_mecha(mecha_list: & Vec<Mecha>) -> io::Result<(Mecha)> {
 
+    println!("select mecha number");
+
+    let read_value = read_u8_from_console()?;
+    let result = mecha_list.get(read_value.unwrap() as usize - 1);
+    match result {
+        None => Err(Error::new(ErrorKind::Other, "oh no!")),
+        Some(m) => {Ok(m.clone())}
+    }
 }
 
